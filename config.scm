@@ -37,89 +37,81 @@
              (gnu services docker))
 
 (define %packagelist-essential
-  %base-packages)
-
-(define %packagelist-codecs
-  (list ffmpeg))
-
-(define %packagelist-networking
-  (list fail2ban
-        curl
-        wget
-        netcat
-        nmap
-        nginx))
-
-(define %packagelist-administration
-  (list btop
-        bmon
-        dbus
-        elogind
-        fastfetch
-        turbostat))
-
-(define %packagelist-development
-  (list git
-        (specification->package "make")
-        autoconf
-        automake
-        perl
-        perl-json
-        perl-json-parse
-        python
-        gcc
-        zig
-        openjdk
-        containerd
-        docker
-        docker-cli
-        docker-compose))
-
-(define %packagelist-emacs
-  (list emacs
-        emacs-guix
-        emacs-company
-        emacs-magit
-        emacs-org
-        emacs-vterm))
+  (list
+   ;; codecs
+   ffmpeg
+   ;; networking
+   fail2ban
+   curl
+   wget
+   netcat
+   nmap
+   nginx
+   ;; administration
+   btop
+   bmon
+   dbus
+   elogind
+   fastfetch
+   turbostat
+   ;; development
+   git
+   (specification->package "make")
+   autoconf
+   automake
+   perl
+   perl-json
+   perl-json-parse
+   python
+   gcc
+   zig
+   openjdk
+   containerd
+   docker
+   docker-cli
+   docker-compose
+   ;; emacs
+   emacs
+   emacs-guix
+   emacs-company
+   emacs-magit
+   emacs-org
+   emacs-vterm))
 
 (define %servicelist-essential
-  (append
-   %base-services
-   (list (service dhcpcd-service-type)
-         (service ntp-service-type))))
+  (list
+   ;; net
+   (service dhcpcd-service-type)
+   (service ntp-service-type)
+   ;; docker
+   (service elogind-service-type)
+   (service dbus-root-service-type)
+   (service containerd-service-type)
+   (service docker-service-type)))
 
+;; 'fail2ban-jail-service' is a wrapper function that defines
+;;both the fail2ban method and its subclass, which in this
+;;case is openssh. So no need to redefine it elsewhere
 (define %servicelist-ssh
   (list
-   ;; 'fail2ban-jail-service' is a wrapper function that defines
-   ;;both the fail2ban method and its subclass, which in this
-   ;;case is openssh. So no need to redefine it elsewhere
    (service
     (fail2ban-jail-service
      openssh-service-type
      (fail2ban-jail-configuration (name "sshd")
                                   (enabled? #t)
                                   (max-retry 10)
-                                  (ban-time "10m")
+                                  (ban-time "50m")
                                   (ban-time-increment? #f)))
     (openssh-configuration (port-number 22)
                            (max-connections 5)
                            (permit-root-login #f)
                            (accepted-environment (list "COLORTERM"))))))
 
-(define %servicelist-docker
-  (list
-   ;; All docker dependencies
-   (service elogind-service-type)
-   (service dbus-root-service-type)
-   (service containerd-service-type)
-   (service docker-service-type)))
 
 
-
-;;---------------------------------------------------------------------------;;
-;; Here begins the actual system definition.                                 ;;
-;;---------------------------------------------------------------------------;;
+;;============================================================================;;
+;; HERE BEGINS THE ACTUAL SYSTEM DEFINITION.                                  ;;
+;;============================================================================;;
 (operating-system
  (locale "en_US.utf8")
  (timezone "America/Sao_Paulo")
@@ -140,15 +132,12 @@
  ;;---------------------------------------------------------------------------;;
  ;; List of system packages and daemon services (defined previously).         ;;
  ;;---------------------------------------------------------------------------;;
- (packages (append %packagelist-essential
-                   %packagelist-codecs
-                   %packagelist-networking
-                   %packagelist-administration
-                   %packagelist-development
-                   %packagelist-emacs))
- (services (append %servicelist-essential
-                   %servicelist-ssh
-                   %servicelist-docker))
+ (packages (append %base-packages
+                   %packagelist-essential))
+
+ (services (append %base-services
+                   %servicelist-essential
+                   %servicelist-ssh))
  ;;---------------------------------------------------------------------------;;
  ;; Boot/FS/Mounting/Swap/Partition settings. (NOT REPRODUCIBLE)              ;;
  ;;---------------------------------------------------------------------------;;
@@ -157,8 +146,10 @@
    (bootloader grub-efi-bootloader)
    (targets (list "/boot/efi"))
    (keyboard-layout keyboard-layout)))
+
  (swap-devices
   (list (swap-space (target (uuid "1e4cff91-2358-4edb-9c27-06add6d6bf5e")))))
+
  (file-systems
   (cons*
    (file-system (mount-point "/boot/efi")
