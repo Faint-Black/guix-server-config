@@ -70,7 +70,6 @@
    containerd
    docker
    docker-cli
-   docker-compose
    ;; emacs
    emacs
    emacs-guix
