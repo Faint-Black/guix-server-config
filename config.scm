@@ -28,6 +28,7 @@
              (gnu packages emacs-xyz)
              (gnu services)
              (gnu services security)
+             (gnu services shepherd)
              (gnu services dbus)
              (gnu services cups)
              (gnu services desktop)
@@ -56,7 +57,7 @@
    turbostat
    ;; development
    git
-   (specification->package "make")
+   gnu-make
    autoconf
    automake
    perl
@@ -107,6 +108,34 @@
                            (permit-root-login #f)
                            (accepted-environment (list "COLORTERM"))))))
 
+;; ddclient user binary shepherd service, does nothing if it doesn't exist
+(define %servicelist-ddclient
+  (if (file-exists? "/usr/bin/ddclient")
+      (list
+       (simple-service
+        'ddclient-service shepherd-root-service-type
+        (list
+         (shepherd-service
+          (auto-start? #t)
+          (documentation "ddclient daemon")
+          (provision '(ddclient))
+          (requirement '(networking user-processes))
+          (start
+           #~(make-forkexec-constructor
+              '("/usr/bin/ddclient"
+                "--daemon" "600"
+                "--file" "/home/cezar/Desktop/ddclient/ddclient.conf"
+                "--foreground")
+              #:environment-variables
+              (list
+               "HOME=/home/cezar"
+               "PATH=/run/privileged/bin:/home/cezar/.config/guix/current/bin:/home/cezar/.guix-home/profile/bin:/home/cezar/.guix-profile/bin:/run/current-system/profile/bin:/run/current-system/profile/sbin"
+               "SSL_CERT_DIR=/run/current-system/profile/etc/ssl/certs"
+               "SSL_CERT_FILE=/run/current-system/profile/etc/ssl/certs/ca-certificates.crt"
+               "PERL5LIB=/run/current-system/profile/lib/perl5/site_perl")))
+          (stop
+           #~(make-kill-destructor))))))
+      '()))
 
 
 ;;============================================================================;;
@@ -137,6 +166,7 @@
 
  (services (append %base-services
                    %servicelist-essential
+                   %servicelist-ddclient
                    %servicelist-ssh))
  ;;---------------------------------------------------------------------------;;
  ;; Boot/FS/Mounting/Swap/Partition settings. (NOT REPRODUCIBLE)              ;;
