@@ -24,6 +24,7 @@
              (gnu packages rsync)
              (gnu packages version-control)
              (gnu packages java)
+             (gnu packages slang)
              (gnu packages emacs)
              (gnu packages emacs-xyz)
              (gnu services)
@@ -49,6 +50,7 @@
    nmap
    nginx
    ;; administration
+   most
    btop
    bmon
    dbus
@@ -155,7 +157,7 @@
                  (comment "Cezar")
                  (group "users")
                  (home-directory "/home/cezar")
-                 (supplementary-groups '("wheel" "netdev" "audio" "video")))
+                 (supplementary-groups '("wheel" "netdev" "audio" "video" "docker")))
    %base-user-accounts))
  ;;---------------------------------------------------------------------------;;
  ;; List of system packages and daemon services (defined previously).         ;;
