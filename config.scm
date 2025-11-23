@@ -8,6 +8,9 @@
              (gnu packages)
              (gnu packages linux)
              (gnu packages networking)
+             (gnu packages compression)
+             (gnu packages file)
+             (gnu packages dns)
              (gnu packages autotools)
              (gnu packages freedesktop)
              (gnu packages web)
@@ -27,6 +30,7 @@
              (gnu packages slang)
              (gnu packages emacs)
              (gnu packages emacs-xyz)
+             (gnu packages luanti)
              (gnu services)
              (gnu services security)
              (gnu services shepherd)
@@ -40,8 +44,10 @@
 
 (define %packagelist-essential
   (list
-   ;; codecs
+   ;; codecs and compression
    ffmpeg
+   unzip
+   tar
    ;; networking
    fail2ban
    curl
@@ -57,6 +63,7 @@
    elogind
    fastfetch
    turbostat
+   tree
    ;; development
    git
    gnu-make
@@ -72,13 +79,16 @@
    containerd
    docker
    docker-cli
+   docker-compose
    ;; emacs
    emacs
    emacs-guix
    emacs-company
    emacs-magit
    emacs-org
-   emacs-vterm))
+   emacs-vterm
+   ;; misc
+   luanti-server))
 
 (define %servicelist-essential
   (list
