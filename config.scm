@@ -9,6 +9,7 @@
              (gnu packages linux)
              (gnu packages networking)
              (gnu packages compression)
+             (gnu packages vpn)
              (gnu packages file)
              (gnu packages dns)
              (gnu packages autotools)
@@ -33,6 +34,7 @@
              (gnu packages luanti)
              (gnu services)
              (gnu services rsync)
+             (gnu services vpn)
              (gnu services security)
              (gnu services shepherd)
              (gnu services dbus)
@@ -57,6 +59,7 @@
    netcat
    nmap
    nginx
+   wireguard-tools
    ;; administration
    most
    btop
@@ -102,6 +105,19 @@
    (service dbus-root-service-type)
    (service containerd-service-type)
    (service docker-service-type)))
+
+;; wireguard peers
+(define %servicelist-wireguard
+  (list
+   (service
+    wireguard-service-type
+    (wireguard-configuration
+     (addresses '("10.0.0.1/32"))
+     (peers
+      (list
+       (wireguard-peer (name "client-0")
+                       (public-key "1i1iiSRwODnPjjaohyhmKEWmZeSIL9C3i477MXPUNXk=")
+                       (allowed-ips '("10.0.0.2/32")))))))))
 
 ;; defines my rsync module list
 (define %servicelist-rsync
@@ -192,6 +208,7 @@
  (services (append %base-services
                    %servicelist-essential
                    %servicelist-rsync
+                   %servicelist-wireguard
                    %servicelist-ddclient
                    %servicelist-ssh))
  ;;---------------------------------------------------------------------------;;
