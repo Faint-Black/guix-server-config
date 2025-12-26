@@ -32,6 +32,7 @@
              (gnu packages emacs-xyz)
              (gnu packages luanti)
              (gnu services)
+             (gnu services rsync)
              (gnu services security)
              (gnu services shepherd)
              (gnu services dbus)
@@ -48,6 +49,7 @@
    ffmpeg
    unzip
    tar
+   rsync
    ;; networking
    fail2ban
    curl
@@ -76,10 +78,10 @@
    gcc
    zig
    openjdk
+   ;; containers
    containerd
    docker
    docker-cli
-   docker-compose
    ;; emacs
    emacs
    emacs-guix
@@ -100,6 +102,18 @@
    (service dbus-root-service-type)
    (service containerd-service-type)
    (service docker-service-type)))
+
+;; defines my rsync module list
+(define %servicelist-rsync
+  (list
+   (service
+    rsync-service-type
+    (rsync-configuration
+     (modules
+      (list
+       (rsync-module (name "media")
+                     (read-only? #f)
+                     (file-name "/home/cezar/Desktop/media"))))))))
 
 ;; 'fail2ban-jail-service' is a wrapper function that defines
 ;;both the fail2ban method and its subclass, which in this
@@ -177,6 +191,7 @@
 
  (services (append %base-services
                    %servicelist-essential
+                   %servicelist-rsync
                    %servicelist-ddclient
                    %servicelist-ssh))
  ;;---------------------------------------------------------------------------;;
